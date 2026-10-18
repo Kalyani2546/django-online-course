@@ -1,8 +1,47 @@
 from django.db import models
 from django.utils.timezone import now
+from django.conf import settings
+
+class Course(models.Model):
+    name = models.CharField(max_length=100, default='online course')
+    image = models.ImageField(upload_to='course_images/')
+    description = models.CharField(max_length=1000)
+    pub_date = models.DateField(null=True)
+    instructors = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Enrollment')
+
+    def __str__(self):
+        return self.name
+
+
+class Lesson(models.Model):
+    title = models.CharField(max_length=200, default="title")
+    order = models.IntegerField(default=0)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    content = models.TextField()
+
+    def __str__(self):
+        return self.title
+
+
+class Enrollment(models.Model):
+    HOME = 'audit'
+    HONOR = 'honor'
+    BETA = 'beta'
+    COURSE_MODES = [
+        (HOME, 'Audit'),
+        (HONOR, 'Honor'),
+        (BETA, 'Beta'),
+    ]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    date_enrolled = models.DateField(default=now)
+    mode = models.CharField(max_length=5, choices=COURSE_MODES, default=HOME)
+    rating = models.FloatField(default=5.0)
+
 
 class Question(models.Model):
-    lesson = models.ForeignKey('Lesson', on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     question_text = models.CharField(max_length=200)
     grade = models.IntegerField(default=1)
 
@@ -29,7 +68,7 @@ class Choice(models.Model):
 
 
 class Submission(models.Model):
-    enrollment = models.ForeignKey('Enrollment', on_delete=models.CASCADE)
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     choices = models.ManyToManyField(Choice)
 
     def __str__(self):
