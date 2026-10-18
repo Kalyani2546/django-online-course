@@ -11,15 +11,20 @@ class QuestionInline(admin.StackedInline):
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInline]
+    list_display = ['question_text', 'grade']
 
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ['title']
+    list_display = ['title', 'order']
     inlines = [QuestionInline]
 
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ['name', 'pub_date']
+    search_fields = ['name', 'description']
+
+admin.site.register(Course, CourseAdmin)
+admin.site.register(Lesson, LessonAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)
 admin.site.register(Submission)
-admin.site.register(Course)
-admin.site.register(Lesson, LessonAdmin)
 admin.site.register(Instructor)
 admin.site.register(Learner)
